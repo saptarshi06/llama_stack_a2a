@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent Code Generation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #2d3748;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a5568;
+        }
+        
+        .skills-section {
+            margin-bottom: 30px;
+        }
+        
+        .skills-section h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #a0aec0;
+            text-transform: uppercase;
+        }
+        
+        .skill-tag {
+            display: inline-block;
+            background: #4a5568;
+            padding: 5px 10px;
+            margin: 4px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        
+        .agents-list {
+            margin-top: 20px;
+        }
+        
+        .agent-item {
+            background: #4a5568;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        
+        .agent-name {
+            font-weight: bold;
+            color: #90cdf4;
+        }
+        
+        .agent-desc {
+            font-size: 11px;
+            color: #cbd5e0;
+            margin-top: 4px;
+        }
+        
+        .session-info {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid #4a5568;
+            font-size: 12px;
+            color: #a0aec0;
+        }
+        
+        /* Main chat area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f7fafc;
+        }
+        
+        .chat-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .chat-header h1 {
+            font-size: 24px;
+            color: #2d3748;
+        }
+        
+        .chat-header p {
+            color: #718096;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            text-align: right;
+        }
+        
+        .user-message .message-bubble {
+            background: #667eea;
+            color: white;
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 15px 15px 0 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        
+        .agent-message {
+            text-align: left;
+        }
+        
+        .agent-message .message-bubble {
+            background: white;
+            border: 1px solid #e2e8f0;
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 15px 15px 15px 0;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .system-message {
+            text-align: center;
+        }
+        
+        .system-message .message-bubble {
+            background: #edf2f7;
+            color: #4a5568;
+            font-size: 12px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            max-width: 90%;
+            display: inline-block;
+        }
+        
+        .agent-header {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .agent-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .agent-system { background: #4299e1; }
+        .agent-software { background: #48bb78; }
+        .agent-code { background: #ed8936; }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin-top: 10px;
+            max-height: 400px;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #c53030;
+        }
+        
+        .info-message {
+            background: #e6fffa;
+            color: #234e52;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #38b2ac;
+        }
+        
+        .input-area {
+            background: white;
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .message-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .send-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .send-button:hover {
+            background: #5a67d8;
+        }
+        
+        .send-button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #a0aec0;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .clear-button {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .clear-button:hover {
+            background: #cbd5e0;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #48bb78;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>🤖 AI Agents</h2>
+            
+            <div class="skills-section">
+                <h3>💻 Supported Languages</h3>
+                <div id="skills-list">
+                    <div class="skill-tag">Python</div>
+                    <div class="skill-tag">C</div>
+                    <div class="skill-tag">C++</div>
+                    <div class="skill-tag">Java</div>
+                    <div class="skill-tag">Assembly</div>
+                </div>
+            </div>
+            
+            <div class="agents-list">
+                <h3>🧠 Agent Pipeline</h3>
+                <div class="agent-item">
+                    <div class="agent-name">🔍 System Requirement Agent</div>
+                    <div class="agent-desc">Analyzes user requests and generates system requirements</div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">📝 Software Requirement Agent</div>
+                    <div class="agent-desc">Creates detailed software specifications</div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">💻 Code Generator Agent</div>
+                    <div class="agent-desc">Generates code in supported languages</div>
+                </div>
+            </div>
+            
+            <div class="session-info">
+                <div>📱 Session ID: <span id="session-id">Loading...</span></div>
+                <button class="clear-button" onclick="clearChat()" style="margin-top: 10px;">🗑️ Clear Chat</button>
+                <div style="margin-top: 10px;">
+                    <span class="status-badge"></span>
+                    <span id="status-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main chat area -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <h1>Multi-Agent Code Generation System</h1>
+                <p>Describe what you want to build, and our AI agents will generate requirements and code</p>
+            </div>
+            
+            <div class="messages-container" id="messages-container">
+                <div class="message system-message">
+                    <div class="message-bubble">
+                        🤖 Welcome! I have 3 AI agents ready to help you:<br>
+                        • System Requirement Agent - Analyzes your needs<br>
+                        • Software Requirement Agent - Creates specifications<br>
+                        • Code Generator Agent - Writes the code<br><br>
+                        💡 Try: "Build a REST API for a todo list"<br>
+                        🔧 Supported languages: Python, C, C++, Java, Assembly
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <div class="input-group">
+                    <textarea 
+                        id="message-input" 
+                        class="message-input" 
+                        placeholder="Describe your project idea... (e.g., 'Create a web scraper')"
+                        rows="2"
+                    ></textarea>
+                    <button id="send-button" class="send-button" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get session ID
+        let sessionId = localStorage.getItem('session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('session_id', sessionId);
+        }
+        document.getElementById('session-id').textContent = sessionId.substr(0, 20) + '...';
+        
+        let isProcessing = false;
+        
+        // Load skills on startup
+        async function loadSkills() {
+            try {
+                const response = await fetch('/api/skills');
+                const data = await response.json();
+                const skillsContainer = document.getElementById('skills-list');
+                skillsContainer.innerHTML = '';
+                data.supported_languages.forEach(lang => {
+                    const tag = document.createElement('div');
+                    tag.className = 'skill-tag';
+                    tag.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
+                    skillsContainer.appendChild(tag);
+                });
+                document.getElementById('status-text').textContent = 'Ready';
+            } catch (error) {
+                console.error('Failed to load skills:', error);
+                document.getElementById('status-text').textContent = 'Error loading skills';
+            }
+        }
+        
+        // Check health
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                if (data.ollama) {
+                    document.getElementById('status-text').textContent = 'Connected to Ollama';
+                    document.querySelector('.status-badge').style.background = '#48bb78';
+                } else {
+                    document.getElementById('status-text').textContent = 'Ollama not connected';
+                    document.querySelector('.status-badge').style.background = '#f56565';
+                }
+            } catch (error) {
+                document.getElementById('status-text').textContent = 'Server disconnected';
+                document.querySelector('.status-badge').style.background = '#f56565';
+            }
+        }
+        
+        function addMessage(type, agent, content, metadata = {}) {
+            const container = document.getElementById('messages-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            
+            let html = '';
+            
+            if (type === 'agent') {
+                let agentIcon = '';
+                let agentColor = '';
+                let agentDisplayName = '';
+                
+                if (agent === 'system_requirement') {
+                    agentIcon = '🔍';
+                    agentColor = 'agent-system';
+                    agentDisplayName = 'System Requirement Agent';
+                } else if (agent === 'software_requirement') {
+                    agentIcon = '📝';
+                    agentColor = 'agent-software';
+                    agentDisplayName = 'Software Requirement Agent';
+                } else if (agent === 'code_generator') {
+                    agentIcon = '💻';
+                    agentColor = 'agent-code';
+                    agentDisplayName = 'Code Generator Agent';
+                } else {
+                    agentIcon = '🤖';
+                    agentColor = 'agent-system';
+                    agentDisplayName = agent || 'Agent';
+                }
+                
+                html += `<div class="agent-header">
+                    <div class="agent-icon ${agentColor}">${agentIcon}</div>
+                    <span>${metadata.agent_name || agentDisplayName}</span>
+                </div>`;
+            }
+            
+            if (metadata.is_code) {
+                html += `<div class="message-bubble" style="max-width: 90%;">
+                    ${content}
+                </div>`;
+            } else {
+                html += `<div class="message-bubble">${formatContent(content)}</div>`;
+            }
+            
+            messageDiv.innerHTML = html;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function addSystemMessage(content, isError = false, isInfo = false) {
+            const container = document.getElementById('messages-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system-message';
+            
+            if (isError) {
+                messageDiv.innerHTML = `<div class="error-message">⚠️ ${escapeHtml(content)}</div>`;
+            } else if (isInfo) {
+                messageDiv.innerHTML = `<div class="info-message">ℹ️ ${escapeHtml(content)}</div>`;
+            } else {
+                messageDiv.innerHTML = `<div class="message-bubble">${escapeHtml(content)}</div>`;
+            }
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function formatContent(content) {
+            if (typeof content === 'object') {
+                return `<pre style="margin:0; white-space:pre-wrap; font-family: monospace; font-size: 12px;">${escapeHtml(JSON.stringify(content, null, 2))}</pre>`;
+            }
+            return escapeHtml(content).replace(/\n/g, '<br>');
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function showTypingIndicator() {
+            hideTypingIndicator();
+            const container = document.getElementById('messages-container');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'message system-message';
+            typingDiv.innerHTML = `<div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <span style="margin-left: 8px;">AI agents are processing...</span>
+            </div>`;
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+        
+        async function sendMessage() {
+            if (isProcessing) return;
+            
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Disable input
+            isProcessing = true;
+            const sendButton = document.getElementById('send-button');
+            sendButton.disabled = true;
+            input.disabled = true;
+            
+            // Add user message
+            addMessage('user', null, message);
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId,
+                        language: null
+                    })
+                });
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let currentAgent = null;
+                let currentContent = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                
+                                hideTypingIndicator();
+                                
+                                if (data.type === 'stream') {
+                                    if (currentAgent !== data.agent) {
+                                        if (currentAgent && currentContent) {
+                                            addMessage('agent', currentAgent, currentContent, {});
+                                            currentContent = '';
+                                        }
+                                        currentAgent = data.agent;
+                                        addSystemMessage(data.message || `${data.agent} is working...`, false, true);
+                                    }
+                                    currentContent += data.content;
+                                } else if (data.type === 'complete') {
+                                    if (currentContent) {
+                                        addMessage('agent', data.agent, currentContent, {});
+                                        currentContent = '';
+                                    }
+                                    
+                                    if (data.requirements) {
+                                        addMessage('agent', 'system_requirement', 
+                                            `✅ System Requirements Generated:\n\n${JSON.stringify(data.requirements, null, 2)}`,
+                                            {});
+                                    } else if (data.specifications) {
+                                        addMessage('agent', 'software_requirement',
+                                            `✅ Software Specifications Generated:\n\n${JSON.stringify(data.specifications, null, 2)}`,
+                                            {});
+                                    } else if (data.code) {
+                                        let codeHtml = `<strong>📁 Generated Code (${data.language.toUpperCase()})</strong><br><br>`;
+                                        if (data.code.files) {
+                                            data.code.files.forEach(file => {
+                                                codeHtml += `<strong>📄 ${file.filename}</strong><br>`;
+                                                codeHtml += `<div class="code-block"><pre>${escapeHtml(file.content)}</pre></div><br>`;
+                                            });
+                                        }
+                                        if (data.code.build_instructions) {
+                                            codeHtml += `<strong>🔧 Build Instructions:</strong><br>${data.code.build_instructions}<br><br>`;
+                                        }
+                                        addMessage('agent', 'code_generator', codeHtml, { 
+                                            is_code: true 
+                                        });
+                                    }
+                                    
+                                    if (data.message) {
+                                        addSystemMessage(data.message, false, false);
+                                    }
+                                    currentAgent = null;
+                                } else if (data.type === 'error') {
+                                    addSystemMessage(`❌ ${data.error}`, true, false);
+                                    currentAgent = null;
+                                } else if (data.type === 'info') {
+                                    addSystemMessage(data.message, false, true);
+                                } else if (data.type === 'pipeline_start' || data.type === 'pipeline_step') {
+                                    addSystemMessage(data.message, false, true);
+                                } else if (data.type === 'pipeline_complete') {
+                                    addSystemMessage(`🎉 ${data.message}`, false, false);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse SSE data:', e);
+                            }
+                        }
+                    }
+                }
+                
+                if (currentContent) {
+                    addMessage('agent', currentAgent || 'agent', currentContent, {});
+                }
+                hideTypingIndicator();
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                hideTypingIndicator();
+                addSystemMessage(`Connection error: ${error.message}. Make sure the Flask server is running.`, true, false);
+            } finally {
+                isProcessing = false;
+                sendButton.disabled = false;
+                input.disabled = false;
+                input.focus();
+            }
+        }
+        
+        function clearChat() {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = `
+                <div class="message system-message">
+                    <div class="message-bubble">
+                        🤖 Chat cleared! Start a new conversation.<br><br>
+                        💡 Try: "Build a REST API for a todo list"<br>
+                        🔧 Supported languages: Python, C, C++, Java, Assembly
+                    </div>
+                </div>
+            `;
+            // Generate new session ID on clear
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('session_id', sessionId);
+            document.getElementById('session-id').textContent = sessionId.substr(0, 20) + '...';
+        }
+        
+        // Handle Enter key
+        const messageInput = document.getElementById('message-input');
+        if (messageInput) {
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+        
+        // Make sendMessage globally available
+        window.sendMessage = sendMessage;
+        window.clearChat = clearChat;
+        
+        // Load skills and check health on startup
+        loadSkills();
+        checkHealth();
+        setInterval(checkHealth, 30000); // Check health every 30 seconds
+    </script>
+</body>
+</html>
