@@ -1,10 +1,9 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# Based on Llama Stack AsyncAgent pattern
-
 import json
 import logging
 from typing import AsyncIterator, Dict, Any, Optional
 from openai import AsyncOpenAI
+from common.mcp.mcp_client import MCPClient
+from common.mcp.tool_registry import TOOLS
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,11 @@ class OllamaClient:
             api_key="ollama",  # Required but not used by Ollama
             timeout=60.0
         )
+        #self.mcp_client = MCPClient()
         self.model = model
+    
+    async def initialize(self):
+        await self.mcp_client.connect()
     
     async def generate(
         self,
@@ -63,22 +66,94 @@ class OllamaClient:
         self,
         messages: list[Dict[str, str]],
         temperature: float = 0.7,
-        max_tokens: int = 2048
+        max_tokens: int = 2048,
+        #tools: Optional[list] = None
     ) -> Dict[str, Any]:
         """Non-streaming version that returns a single dict"""
         try:
             response = await self.client.chat.completions.create(
                 model=self.model,
-                messages=messages,
+                message=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
-                stream=False
+                stream=False,
+                # tools=tools or [],
+                # tool_choice="auto"
             )
+
+            # message = response.choices[0].message
+            # if message.tool_calls:
+            #     message.append({
+            #         "role": "assistant",
+            #         "content": message.content,
+            #         "tool_calls": [
+            #             {
+            #                 "id": tool_call.id,
+            #                 "type": "function",
+            #                 "function": {
+            #                     "name": tool_call.function.name,
+            #                     "arguments": tool_call.function.arguments
+            #                 }
+            #             }
+            #             for tool_call in message.tool_calls
+            #         ]
+            #     })
+
+                # for tool_call in message.tool_calls:
+                #     tool_name = tool_call.function.name
+                #     arguments = json.loads(
+                #         tool_call.function.arguments
+                #     )
+
+                #     tool_result = await self.mcp_client.call_tool(
+                #         tool_name,
+                #         arguments
+                #     )
+
+                #     messages.append({
+                #         "role": "tool",
+                #         "tool_call_id": tool_call.id,
+                #         "name": tool_name,
+                #         "content": str(tool_result)
+                #     })
+                
+                # final_response = await self.client.chat.completions.create(
+                #     model=self.model,
+                #     messages=messages,
+                #     temperature=temperature,
+                #     max_tokens=max_tokens,
+                #     stream=False
+                # )
+
+                # return{
+                #     "type": "complete",
+                #     "content": final_response.choices[0].message.content
+                # }
+
             return {"type": "complete", "content": response.choices[0].message.content}
+        
         except Exception as e:
             logger.error(f"Ollama generation error: {e}")
             return {"type": "error", "error": str(e)}
     
+    # Generate function for MCP Client server
+    # async def generate(
+    #     self,
+    #     messages: list[Dict[str, str]],
+    #     temperature: float = 0.7,
+    #     max_tokens: int = 2048,
+    #     stream: bool = True,
+    #     tools: Optional[list] = None
+    # ) -> AsyncIterator[Dict[str, Any]]:
+
+    #     result = await self.generate_non_streaming(
+    #         messages,
+    #         temperature,
+    #         max_tokens
+    #     )
+
+    #     yield result
+
     async def health_check(self) -> bool:
         """Check if Ollama is running and model is available"""
         try:

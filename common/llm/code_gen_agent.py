@@ -42,7 +42,6 @@ class SkillsRegistry:
         """Return list of all supported languages"""
         return self.supported_languages
 
-
 class CodeGeneratorAgent:
     """Agent for generating code with language validation"""
     

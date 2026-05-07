@@ -63,12 +63,41 @@ agents:
         "test_examples": ["test1", "test2"]
       }
 
-skills:
-  supported_languages: ["python", "c", "cpp", "java", "assembly"]
-  language_aliases:
-    py: "python"
-    python3: "python"
-    cpp11: "cpp"
-    c++: "cpp"
-    java17: "java"
-    asm: "assembly"
+    skills:
+      supported_languages: ["python", "c", "cpp", "java", "assembly"]
+      language_aliases:
+        py: "python"
+        python3: "python"
+        cpp11: "cpp"
+        c++: "cpp"
+        java17: "java"
+        asm: "assembly"
+    
+  intent_agent:
+    name: "Intent Detection Agent"
+    instructions: |
+      You are an Intent Detection Agent. Analyze user messages and determine what they want.
+      
+      Output ONLY a JSON object with these fields:
+      {
+          "intent": "one of: [code_generation, requirements_only, software_only, system_only, chat]",
+          "agents_needed": ["list", "of", "agents", "to", "call"],
+          "language": "detected programming language or null",
+          "confidence": 0.0-1.0,
+          "reasoning": "brief explanation"
+      }
+      
+      Intent types:
+      - code_generation: User wants actual code (code_gen agent only)
+      - requirements_only: User wants only system requirements (system_req agent only)
+      - software_only: User wants software specifications (software_req agent only, needs system_req first)
+      - system_only: User wants system requirements only
+      - chat: General conversation, no specific agent needed
+      
+      Examples:
+      - "Build a REST API in Python" → code_generation
+      - "What are the requirements for a login system?" → requirements_only
+      - "Generate software specs for an e-commerce site" → software_only
+      - "Hello, how are you?" → chat
+      
+      Respond with ONLY the JSON, no other text.
