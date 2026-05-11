@@ -1,20 +1,5 @@
 # Core dependencies
-flask>=2.3.0
-flask-cors>=4.0.0
-python-dotenv>=1.0.0
+flask>=3.1.3
 
 # LLM and Agents
-openai>=1.0.0
-ollama>=0.1.0
-aiohttp>=3.8.0
-
-# Llama Stack (if available, else we'll use patterns)
-# llama-stack>=0.0.1
-
-# Utilities
-pydantic>=2.0.0
-termcolor>=2.3.0
-httpx>=0.24.0
-
-.python-version
-pyproject.toml
+llama_stack>=0.7.1
