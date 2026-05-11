@@ -37,7 +37,6 @@ def chat():
     def generate():
         """Generate streaming response"""
         import asyncio
-        from flask import current_app
         
         # Create async generator function
         async def async_generator():

@@ -166,7 +166,7 @@ class OllamaClient:
                 temperature=temperature,
                 max_tokens=max_tokens,
                 stream=False,
-                tools=tools,
+                tools=TOOLS,
                 tool_choice="auto"
             )
         except Exception as e:

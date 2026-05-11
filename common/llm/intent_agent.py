@@ -47,14 +47,9 @@ class IntentAgent:
                     return None
                 
                 # Validate intent type is valid
-                valid_intents = ["direct_code", "full_pipeline", "requirements_only", "software_only", "system_only", "chat"]
+                valid_intents = ["code_generation", "software_only", "system_only", "others"]
                 if intent_data["intent"] not in valid_intents:
                     logger.warning(f"Invalid intent type: {intent_data['intent']}")
-                    intent_data["intent"] = "chat"
-                
-                # Set default agents_needed based on intent if not provided
-                if not intent_data.get("agents_needed"):
-                    intent_data["agents_needed"] = self._get_agents_for_intent(intent_data["intent"])
                 
                 return intent_data
             else:
@@ -68,12 +63,9 @@ class IntentAgent:
     def _get_agents_for_intent(self, intent: str) -> list:
         """Get default agents needed for a given intent"""
         agent_map = {
-            "direct_code": ["code_gen"],
-            "full_pipeline": ["system_req", "software_req", "code_gen"],
-            "requirements_only": ["system_req"],
+            "code_generation": ["code_gen"],
             "software_only": ["software_req"],
-            "system_only": ["system_req"],
-            "chat": []
+            "system_only": ["system_req"]
         }
         return agent_map.get(intent, [])
     

@@ -36,21 +36,7 @@ def health_ui():
     return render_template("health.html")
 
 if __name__ == "__main__":
-    # Print startup information
-    # print("=" * 60)
-    # print("🤖 Multi-Agent Code Generation System")
-    # print("=" * 60)
-    # print(f"Configuration:")
-    # print(f"  - Model: {config['ollama']['model']}")
-    # print(f"  - Ollama URL: {config['ollama']['base_url']}")
-    # print(f"  - Supported Languages: {', '.join(config['skills']['supported_languages'])}")
-    # print("")
-    # print("Agents:")
     for agent_name, agent_config in config['agents'].items():
         print(f"  - {agent_config['name']}")
-    # print("")
-    # print("🌐 Starting Flask server...")
-    # print("📱 Open http://localhost:5000 in your browser")
-    # print("=" * 60)
     
     app.run(debug=True, host="0.0.0.0", port=5000, threaded=True, use_reloader=False)

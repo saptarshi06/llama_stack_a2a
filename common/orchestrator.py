@@ -144,30 +144,31 @@ class Orchestrator:
             
             # ===== INTENT DETECTION (After safety checks) =====
             intent_result = await self.intent_agent.detect_intent(user_message)
-            
+            intent = None
+
+            # if intent_result is None:
+            #     pass
+            # else:
+            #     intent = intent_result.get("intent", "chat")
+            #     detected_language = intent_result.get("language", language)
+
             if intent_result is None:
-                intent = "chat"
-                detected_language = language
+                # No intent could be detected → treat as unsupported
+                yield {"type": "error", "message": "Could not determine intent. Please rephrase for one of: Code Generator, System Requirement Agent, Software Requirement Agent"}
+                return
             else:
-                intent = intent_result.get("intent", "chat")
-                detected_language = intent_result.get("language", language)
-            
-            logger.info(f"Intent detected: {intent}")
+                intent = intent_result.get("intent", "disabled")
+                detected_language = intent_result.get("language", language)        
+                logger.info(f"Intent detected: {intent}")
             
             # ===== ROUTE BASED ON INTENT (With shields integrated) =====
             
-            if intent == "code_generation" or intent == "direct_code":
-                # ONLY Code Generator
+            if intent == "code_generation":
+
                 yield {"type": "pipeline_step", "step": 1, "agent": "code_generator"}
                 
-                # simple_spec = {
-                #     "user_request": user_message,
-                #     "description": user_message
-                # }
-                
-                final_language = detected_language or self.intent_agent.extract_language(user_message)
+                final_language = (detected_language or self.intent_agent.extract_language(user_message)).lower()
 
-                # Then use it in simple_spec
                 simple_spec = {
                     "modules": [{
                         "name": "main",
@@ -224,7 +225,7 @@ class Orchestrator:
                 yield {"type": "pipeline_complete", "message": "🎉 Code generation complete!"}
                 return
                 
-            elif intent == "system_only" or intent == "requirements_only":
+            elif intent == "system_only":
                 # ONLY System Requirements
                 yield {"type": "pipeline_step", "step": 1, "agent": "system_requirement"}
                 
@@ -334,16 +335,20 @@ class Orchestrator:
                 return
                 
             else:  # chat
+                # Change required here - If want to trigger only three intended agents
                 yield {"type": "pipeline_step", "step": 1, "agent": "assistant", "message": "💬 Responding..."}
                 
-                messages = [
-                    {"role": "system", "content": "You are a helpful assistant. Respond conversationally."},
-                    {"role": "user", "content": user_message}
+                available_agents = [
+                    "Code Generator",
+                    "System Requirement Agent",
+                    "Software Requirement Agent"
                 ]
+                agents_list = ", ".join(available_agents)
                 
-                async for chunk in self.ollama_client.generate(messages, stream=True):
-                    if chunk.get("type") == "content":
-                        yield {"type": "stream", "agent": "assistant", "content": chunk["content"]}
+                yield {
+                    "type": "info",
+                    "message": f"No agents are available for chat context. Available agents: {agents_list}. Please rephrase your request to target one of these agents."
+                }
                 
                 session["history"].append({
                     "request": user_message,

@@ -97,7 +97,7 @@ class CodeGeneratorAgent:
                         "type": "error",
                         "agent": "code_generator",
                         "error": code_output.get("message", f"Language not supported"),
-                        "supported_languages": code_output.get("supported_languages", ["Python", "C", "C++", "Java", "Assembly"]),
+                        "supported_languages": code_output.get("supported_languages", ["python", "c", "c++", "java", "assembly"]),
                         "out_of_skillset": True
                     }
                     return

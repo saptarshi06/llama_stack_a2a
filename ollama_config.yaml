@@ -80,7 +80,7 @@ agents:
       
       Output ONLY a JSON object with these fields:
       {
-          "intent": "one of: [code_generation, requirements_only, software_only, system_only, chat]",
+          "intent": "one of: [code_generation, software_only, system_only]",
           "agents_needed": ["list", "of", "agents", "to", "call"],
           "language": "detected programming language or null",
           "confidence": 0.0-1.0,
@@ -88,11 +88,10 @@ agents:
       }
       
       Intent types:
-      - code_generation: User wants actual code (code_gen agent only)
-      - requirements_only: User wants only system requirements (system_req agent only)
-      - software_only: User wants software specifications (software_req agent only, needs system_req first)
+      - code_generation: User wants actual code (code_generator agent only)
+      - software_only: User wants software requirements (software_req agent only)
       - system_only: User wants system requirements only
-      - chat: General conversation, no specific agent needed
+      - others: Do not process this type of requests
       
       Examples:
       - "Build a REST API in Python" → code_generation
