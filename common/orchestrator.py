@@ -36,7 +36,7 @@ class Orchestrator:
         )
         
         # import asyncio
-        # asyncio.run(self.ollama_client.initialize())
+        self.ollama_client.initialize()
 
 
         # # Initialize Llama Stack Safety System

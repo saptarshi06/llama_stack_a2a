@@ -1,6 +1,6 @@
 from mcp.client.stdio import stdio_client, StdioServerParameters
 from mcp import ClientSession
-
+from pathlib import Path
 
 class MCPClient:
     def __init__(self):
@@ -12,10 +12,10 @@ class MCPClient:
         #     command="python",
         #     args=["mcp_server/server.py"]
         # )
-
+        server_path = Path(__file__).parent.parent / "mcp_server" / "server.py"
         server_params = StdioServerParameters(
             command="python",
-            args=["mcp_server/server.py"]
+            args=[str(server_path)]
         )
 
         self.stdio_context = stdio_client(server_params)

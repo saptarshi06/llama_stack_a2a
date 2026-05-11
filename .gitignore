@@ -1,5 +1,6 @@
-Llama_Stack_Agent
+.venv
 __pycache__/
 ~
-mcp_server
-mcp
+.python-version
+# mcp_server
+# mcp
