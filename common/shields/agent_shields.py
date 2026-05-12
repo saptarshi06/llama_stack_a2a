@@ -1,4 +1,4 @@
-from llama_stack_api import RegisterShieldRequest, Shield
+from llama_stack_api import RegisterShieldRequest
 
 # Shield for System Requirements
 SYSTEM_REQ_SHIELD = RegisterShieldRequest(

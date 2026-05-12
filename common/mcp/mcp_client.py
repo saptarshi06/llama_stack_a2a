@@ -20,7 +20,7 @@ class MCPClient:
 
         self.stdio_context = stdio_client(server_params)
 
-        read, write = await self.stdio_context.__aenter__()
+        read, write = await self.stdio_context.__aenter__() # Entry point for asynchronous context manager
         self.session = ClientSession(read, write)
         await self.session.initialize()
 

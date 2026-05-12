@@ -144,7 +144,7 @@ class OllamaClient:
         temperature: float = 0.7,
         max_tokens: int = 2048,
         stream: bool = True,
-        tools: Optional[list] = None
+        tools: Optional[list] = TOOLS
     ) -> AsyncIterator[Dict[str, Any]]:
         """Generate response, automatically handling tool calls if tools provided.
         
@@ -248,7 +248,6 @@ class OllamaClient:
             logger.error(f"Streaming error: {e}")
             yield {"type": "error", "error": str(e)}
     
-
     async def health_check(self) -> bool:
         """Check if Ollama is running and model is available"""
         try:
